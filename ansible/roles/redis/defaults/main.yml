@@ -65,6 +65,9 @@ redis_default_volumes:
   - "{{ '/etc/timezone:/etc/timezone:ro' if ansible_facts.os_family == 'Debian' else '' }}"
   - "{{ project_name }}:/var/lib/redis/"
   - "kolla_logs:/var/log/kolla/"
+  - "{{ ( redis_tls_ca_file ~ ':/certs/redis-ca.crt') if redis_tls_enable | bool else '' }}"
+  - "{{ ( redis_tls_cert_file ~ ':/certs/redis.crt' ) if redis_tls_enable | bool else ''  }}"
+  - "{{ ( redis_tls_key_file ~ ':/certs/redis.key' ) if redis_tls_enable | bool else ''  }}"
 redis_sentinel_default_volumes:
   - "{{ node_config_directory }}/redis-sentinel/:{{ container_config_directory }}/:ro"
   - "/etc/localtime:/etc/localtime:ro"
@@ -76,3 +79,18 @@ redis_sentinel_extra_volumes: "{{ default_extra_volumes }}"
 
 redis_conf_path: "/etc/redis/redis.conf"
 redis_generated_conf_path: "/etc/redis/redis-regenerated-by-config-rewrite.conf"
+####################
+# TLS
+####################
+redis_tls_enable: false
+redis_tls_generate_certificates: true
+redis_tls_certificate_path: '/etc/kolla/redis-certs'
+redis_tls_ca_file: "{{ redis_tls_certificate_path ~ '/redis-ca.crt' if redis_tls_generate_certificates | bool else  redis_tls_custom_ca_file }}"
+redis_tls_cert_file: "{{ redis_tls_certificate_path ~ '/redis.crt' if redis_tls_generate_certificates | bool else  redis_tls_custom_cert_file  }}"
+redis_tls_key_file: "{{ redis_tls_certificate_path ~ '/redis.key' if redis_tls_generate_certificates | bool else  redis_tls_custom_key_file }}"
+redis_tls_custom_ca_file: "/etc/kolla/redis-certs/redis-ca.crt"
+redis_tls_custom_cert_file: "/etc/kolla/redis-certs/redis.crt"
+redis_tls_custom_key_file: "/etc/kolla/redis-certs/redis.key"
+
+
+redis_tls_ca_key_file: "/etc/kolla/redis-certs/redis-ca.key"

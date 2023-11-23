@@ -1,0 +1,66 @@
+---
+- name: Ensure redis certificate directory exists
+  ansible.builtin.file:
+    path: "{{ redis_tls_certificate_path }}"
+    state: directory
+    mode: '0755'
+  become: true  
+
+- name: Generate private key
+  community.crypto.openssl_privatekey:  
+    path: "{{ redis_tls_ca_key_file }}"
+  
+- name: Generate Redis CSR 
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ redis_tls_ca_key_file }}"
+    common_name: "Ansible Redis CA"
+    use_common_name_for_san: false 
+    basic_constraints:
+      - 'CA:TRUE'
+    basic_constraints_critical: true
+    key_usage:
+      - keyCertSign
+    key_usage_critical: true
+  register: ca_csr
+
+- name: Create self-signed CA certificate from CSR
+  community.crypto.x509_certificate_pipe:
+    csr_content: "{{ ca_csr.csr }}"
+    privatekey_path: "{{ redis_tls_ca_key_file }}"
+    provider: selfsigned
+  register: ca
+
+- name: Write CA file
+  copy:
+    dest: "{{ redis_tls_ca_file }}"
+    content: "{{ ca.certificate }}"
+
+
+- name: Create private key for Redis 
+  community.crypto.openssl_privatekey:
+    path: "{{ redis_tls_key_file }}"
+
+- name: Create CSR for Redis certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ redis_tls_key_file}}"
+  register: csr
+
+- name: Sign REDIS certificate with our CA
+  community.crypto.x509_certificate_pipe:
+    csr_content: "{{ csr.csr }}"
+    provider: ownca
+    # ownca_path: "{{ redis_tls_ca_file }} "
+    ownca_content: "{{ ca.certificate }}"
+    ownca_privatekey_path: "{{ redis_tls_ca_key_file }}"
+    ownca_not_after: +365d  # valid for one year
+    ownca_not_before: "-1d"  # valid since yesterday
+  register: certificate
+
+- name: Write certificate file
+  copy:
+    dest: "{{ redis_tls_cert_file }}"
+    content: "{{ certificate.certificate }}"
+
+
+
+    

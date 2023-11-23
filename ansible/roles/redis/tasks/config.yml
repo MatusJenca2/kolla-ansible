@@ -1,4 +1,9 @@
 ---
+- import_tasks: tls.yml
+  when: 
+  - redis_tls_enable and redis_tls_generate_certificates
+  become: true
+  
 - name: Ensuring config directories exist
   file:
     path: "{{ node_config_directory }}/{{ item.key }}"

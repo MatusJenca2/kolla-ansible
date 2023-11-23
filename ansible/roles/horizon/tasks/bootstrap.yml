@@ -35,4 +35,10 @@
   when:
     - not use_preconfigured_databases | bool
 
+- name: Install additional library to Horizon for Redis Cache
+  community.docker.docker_container_exec:
+    container: horizon
+    command:  bash -c "source /var/lib/kolla/venv/bin/activate; which pip ; pip install django_redis"
+  become: yes
+
 - import_tasks: bootstrap_service.yml

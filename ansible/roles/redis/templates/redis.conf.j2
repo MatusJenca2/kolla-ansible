@@ -1,5 +1,12 @@
 bind {{ api_interface_address }}
+
+{% if redis_tls_enable %}
+port 0
+tls-port {{ redis_port }}
+{% else %}
 port {{ redis_port }}
+{% endif %} 
+
 tcp-backlog 511
 timeout 0
 tcp-keepalive 300
@@ -52,4 +59,12 @@ masterauth {{ redis_master_password }}
 {% if inventory_hostname != groups['redis'][0] %}
 {% set redis_master_address = 'api' | kolla_address(groups['redis'][0]) %}
 replicaof {{ redis_master_address }} 6379
+{% endif %}
+
+{% if redis_tls_enable %}
+
+tls-cert-file /certs/redis.crt
+tls-key-file /certs/redis.key
+tls-ca-cert-file /certs/ca.crt
+
 {% endif %}

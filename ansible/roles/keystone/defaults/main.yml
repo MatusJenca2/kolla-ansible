@@ -153,10 +153,13 @@ keystone_default_volumes:
   - "/etc/localtime:/etc/localtime:ro"
   - "{{ '/etc/timezone:/etc/timezone:ro' if ansible_facts.os_family == 'Debian' else '' }}"
   - "{{ kolla_dev_repos_directory ~ '/keystone/keystone:/var/lib/kolla/venv/lib/python' ~ distro_python_version ~ '/site-packages/keystone' if keystone_dev_mode | bool else '' }}"
+  - "{{ kolla_dev_repos_directory ~ '/oslo.cache/oslo_cache:/var/lib/kolla/venv/lib/python' ~ distro_python_version ~ '/site-packages/oslo_cache' if cache_dev_mode | bool else '' }}"
+  - "/opt/stack/certs:/certs"
   - "kolla_logs:/var/log/kolla/"
   - "keystone_fernet_tokens:/etc/keystone/fernet-keys"
 
 keystone_extra_volumes: "{{ default_extra_volumes }}"
+
 
 ####################
 # OpenStack
@@ -174,7 +177,7 @@ keystone_git_repository: "{{ kolla_dev_repos_git }}/{{ project_name }}"
 keystone_dev_repos_pull: "{{ kolla_dev_repos_pull }}"
 keystone_dev_mode: "{{ kolla_dev_mode }}"
 keystone_source_version: "{{ kolla_source_version }}"
-
+cache_dev_mode: "{{ kolla_dev_mode }}"
 
 ####################
 # Notifications

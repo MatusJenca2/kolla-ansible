@@ -167,22 +167,22 @@ SECRET_KEY='{{ horizon_secret_key }}'
 # We recommend you use memcached for development; otherwise after every reload
 # of the django development server, you will have to login again. To use
 # memcached set CACHES to something like
-#CACHES = {
-#    'default': {
-#        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#        'LOCATION': '127.0.0.1:11211',
-#    },
-#}
-
-{% if groups['memcached'] | length > 0 and horizon_backend_database | bool == False %}
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': [{% for host in groups['memcached'] %}'{{ 'api' | kolla_address(host) | put_address_in_context('memcache') }}:{{ memcached_port }}'{% if not loop.last %},{% endif %}{% endfor %}]
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://default:{{ redis_master_password }}@{{ api_interface_address }}:{{ redis_port }}"
     }
 }
-{% endif %}
+
+# {% if groups['memcached'] | length > 0 and horizon_backend_database | bool == False %}
+# SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#         'LOCATION': [{% for host in groups['memcached'] %}'{{ 'api' | kolla_address(host) | put_address_in_context('memcache') }}:{{ memcached_port }}'{% if not loop.last %},{% endif %}{% endfor %}]
+#     }
+# }
+# {% endif %}
 
 # Send email to the console by default
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

@@ -6,7 +6,11 @@
 - include_tasks: clone.yml
   when:
     - keystone_dev_mode | bool
-
+# - include_role: 
+#     name: cache-dev
+#     tasks_from: clone
+#   when:
+#     - cache_dev_mode | bool
 - import_tasks: bootstrap.yml
 
 - name: Flush handlers

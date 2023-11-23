@@ -1,0 +1,3 @@
+oslo_cache_git_repository: "{{ kolla_dev_repos_git }}/{{ project_name }}"
+oslo_cache_dev_repos_pull: "{{ kolla_dev_repos_pull }}"
+oslo_cache_source_version: "{{ kolla_source_version }}"
